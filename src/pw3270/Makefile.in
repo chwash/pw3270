@@ -326,7 +326,6 @@ cleanDebug:
 		$(BINDBG)/$(LIBNAME)
 
 	@make -C uiparser cleanDebug
-	@make -C common cleanDebug
 
 cleanRelease:
 
@@ -335,7 +334,6 @@ cleanRelease:
 		$(BINRLS)/$(LIBNAME)
 
 	@make -C uiparser cleanRelease
-	@make -C common cleanRelease
 
 clean: \
 	cleanDebug \
