@@ -34,6 +34,7 @@
 
 /*--[ Implement ]------------------------------------------------------------------------------------*/
 
+/*
  void load_terminal_settings(GtkWidget *widget)
  {
  	static HKEY			  predefined[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
@@ -53,4 +54,4 @@
 
 
  }
-
+*/

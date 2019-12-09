@@ -404,10 +404,10 @@ static GtkWidget * trace_window = NULL;
 
  static void save_terminal_settings(GtkWidget *widget, GtkWidget *window)
  {
- 	debug("%s",__FUNCTION__);
 
 	GKeyFile * keyfile = pw3270_session_config_get(FALSE);
 
+ 	debug("%s keyfile=%p",__FUNCTION__,keyfile);
 	if(keyfile)
 	{
 		v3270_to_key_file(widget, keyfile, "terminal");
@@ -777,7 +777,34 @@ static GtkWidget * trace_window = NULL;
 	host = v3270_get_session(widget->terminal);
 
 	// Load terminal settings before connecting the signals.
-	load_terminal_settings(widget->terminal);
+	{
+		GKeyFile * keyfile = pw3270_session_config_get(FALSE);
+
+		if(keyfile)
+		{
+			v3270_load_key_file(widget->terminal,keyfile,"terminal");
+		}
+#ifdef _WIN32
+		else
+		{
+			static HKEY			  predefined[] = { HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE };
+			g_autofree gchar	* path = g_strdup_printf("SOFTWARE\\%s",g_get_application_name());
+
+			size_t	ix;
+
+			for(ix=0;ix < G_N_ELEMENTS(predefined); ix++)
+			{
+				HKEY hKey;
+				if(RegOpenKeyEx(predefined[ix],path,0,KEY_READ,&hKey) == ERROR_SUCCESS)
+				{
+					v3270_load_registry(widget->terminal,hKey,"terminal");
+					RegCloseKey(hKey);
+				}
+			}
+		}
+#endif // _WIN32
+
+	}
 
 	g_object_set_data_full(G_OBJECT(widget->terminal),"toggle_actions",g_new0(GtkAction *,LIB3270_TOGGLE_COUNT),g_free);
 	g_object_set_data_full(G_OBJECT(widget->terminal),"named_actions",(gpointer) action, (GDestroyNotify) g_free);

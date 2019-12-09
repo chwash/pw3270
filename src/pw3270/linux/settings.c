@@ -34,6 +34,7 @@
 
 /*--[ Implement ]------------------------------------------------------------------------------------*/
 
+/*
  void load_terminal_settings(GtkWidget *widget)
  {
 	GError *error = NULL;
@@ -103,3 +104,4 @@
 
  }
 
+*/

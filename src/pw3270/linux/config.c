@@ -279,10 +279,7 @@ void pw3270_session_config_save()
 		if(keyfilename)
 		{
 			g_message( _("Saving %s"), keyfilename);
-
 			g_file_set_contents(keyfilename,text,-1,&error);
-			g_free(keyfilename);
-			keyfilename = 0;
 		}
 		else
 		{
