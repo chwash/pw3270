@@ -58,8 +58,9 @@
 
 	// Configuration
 	LIB3270_EXPORT void		  pw3270_session_config_load(const gchar *filename);
+	LIB3270_EXPORT void		  pw3270_session_config_save();
 	LIB3270_EXPORT void		  pw3270_session_config_free(void);
-	LIB3270_EXPORT GKeyFile * pw3270_session_config_get(void);
+	LIB3270_EXPORT GKeyFile * pw3270_session_config_get(gboolean create);
 
 	gchar		* get_string_from_config(const gchar *group, const gchar *key, const gchar *def);
 	gboolean	  get_boolean_from_config(const gchar *group, const gchar *key, gboolean def);

@@ -265,9 +265,8 @@ void set_integer_to_config(const gchar *group, const gchar *key, gint val)
 
 }
 
-void pw3270_session_config_free(void)
+void pw3270_session_config_save()
 {
-
 	if(!keyfile)
 		return;
 
@@ -301,9 +300,13 @@ void pw3270_session_config_free(void)
 
 	}
 
+}
+
+void pw3270_session_config_free(void)
+{
+	pw3270_session_config_save();
 	g_key_file_free(keyfile);
 	keyfile = NULL;
-
 }
 
 gchar * build_data_filename(const gchar *first_element, ...)
@@ -361,9 +364,9 @@ gchar * filename_from_va(const gchar *first_element, va_list args)
 	return g_build_filename(".",suffix,NULL);
 }
 
-GKeyFile * pw3270_session_config_get(void)
+GKeyFile * pw3270_session_config_get(gboolean create)
 {
-	if(!keyfile)
+	if(!keyfile && create)
 		pw3270_session_config_load(NULL);
 	return keyfile;
 }
@@ -383,7 +386,7 @@ GKeyFile * pw3270_session_config_get(void)
 void save_window_state_to_config(const gchar *group, const gchar *key, GdkWindowState CurrentState)
 {
 	int			  f;
-	GKeyFile	* conf 	= pw3270_session_config_get();
+	GKeyFile	* conf 	= pw3270_session_config_get(TRUE);
 	gchar		* id	= g_strconcat(group,".",key,NULL);
 
 	for(f=0;f<G_N_ELEMENTS(WindowState);f++)
@@ -396,7 +399,7 @@ void save_window_state_to_config(const gchar *group, const gchar *key, GdkWindow
 void save_window_size_to_config(const gchar *group, const gchar *key, GtkWidget *hwnd)
 {
 	int 		  pos[2];
-	GKeyFile	* conf 	= pw3270_session_config_get();
+	GKeyFile	* conf 	= pw3270_session_config_get(TRUE);
 	gchar		* id	= g_strconcat(group,".",key,NULL);
 
 	gtk_window_get_size(GTK_WINDOW(hwnd),&pos[0],&pos[1]);
@@ -409,7 +412,7 @@ void save_window_size_to_config(const gchar *group, const gchar *key, GtkWidget 
 void restore_window_from_config(const gchar *group, const gchar *key, GtkWidget *hwnd)
 {
 	gchar		* id	= g_strconcat(group,".",key,NULL);
-	GKeyFile	* conf 	= pw3270_session_config_get();
+	GKeyFile	* conf 	= pw3270_session_config_get(TRUE);
 
 	if(g_key_file_has_key(conf,id,"size",NULL))
 	{

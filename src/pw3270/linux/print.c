@@ -48,7 +48,7 @@
 	g_message("Loading print settings");
 
 	// Load page and print settings
-	GKeyFile	* conf	= pw3270_session_config_get();
+	GKeyFile	* conf	= pw3270_session_config_get(TRUE);
 	GError		* err	= NULL;
 
 	debug("print_settings=%s",g_key_file_has_group(conf,"print_settings") ? "TRUE" : "FALSE");
@@ -128,7 +128,7 @@
     trace("%s(%p)",__FUNCTION__,operation);
 	g_message("Saving print settings");
 
-	GKeyFile * conf = pw3270_session_config_get();
+	GKeyFile * conf = pw3270_session_config_get(TRUE);
 	gtk_print_settings_to_key_file(settings,conf,"print_settings");
 	gtk_page_setup_to_key_file(pgsetup,conf,"page_setup");
 	gtk_paper_size_to_key_file(papersize,conf,"paper_size");

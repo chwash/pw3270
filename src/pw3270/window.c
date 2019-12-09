@@ -406,21 +406,25 @@ static GtkWidget * trace_window = NULL;
  {
  	debug("%s",__FUNCTION__);
 
-#ifdef ENABLE_WINDOWS_REGISTRY
+	GKeyFile * keyfile = pw3270_session_config_get(FALSE);
 
-	HKEY hKey;
-
-	if(get_registry_handle(NULL, &hKey, KEY_SET_VALUE))
+	if(keyfile)
 	{
-		v3270_to_registry(widget, hKey, "terminal");
-		RegCloseKey(hKey);
+		v3270_to_key_file(widget, keyfile, "terminal");
+		pw3270_session_config_save();
 	}
+#ifdef _WIN32
+	else
+	{
+		HKEY hKey;
 
-#else
-
-	v3270_to_key_file(widget, pw3270_session_config_get(), "terminal");
-
-#endif // _WIN32
+		if(get_registry_handle(NULL, &hKey, KEY_SET_VALUE))
+		{
+			v3270_to_registry(widget, hKey, "terminal");
+			RegCloseKey(hKey);
+		}
+	}
+#endif
 
  }
 

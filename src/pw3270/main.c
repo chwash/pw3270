@@ -487,7 +487,7 @@ int main(int argc, char *argv[])
 					pw3270_session_config_load(argv[ix]);
 		}
 
-		pw3270_session_config_get();
+		pw3270_session_config_get(TRUE);
 
 	}
 
