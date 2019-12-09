@@ -744,6 +744,7 @@ gboolean get_registry_handle(const gchar *group, HKEY *hKey, REGSAM samDesired)
 	return ret;
 }
 #else
+#error Replace it!
 GKeyFile * get_application_keyfile(void)
 {
 	if(!program_config)

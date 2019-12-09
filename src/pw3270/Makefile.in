@@ -45,8 +45,7 @@ APP_SOURCES=\
 	$(wildcard @OSNAME@/*.rc)
 
 MODULES=\
-	uiparser \
-	common
+	uiparser
 
 #---[ Configuration values ]-------------------------------------------------------------
 

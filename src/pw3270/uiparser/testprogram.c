@@ -1,6 +1,6 @@
 
 #include <gtk/gtk.h>
-#include "../common/common.h"
+#include "../common.h"
 #include "parser.h"
 
 /*--[ Globals ]--------------------------------------------------------------------------------------*/
@@ -90,7 +90,6 @@ int main (int argc, char *argv[])
 	GtkWidget	* hbox;
 
 	gtk_init(&argc, &argv);
-	configuration_init();
 
 	hbox   = gtk_hbox_new(FALSE,5);
 	vbox   = gtk_vbox_new(FALSE,5);

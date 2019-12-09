@@ -50,6 +50,7 @@
 #include "v3270/accessible.h"
 #include <stdlib.h>
 #include <lib3270/log.h>
+#include "common.h"
 
 #define ERROR_DOMAIN g_quark_from_static_string(PACKAGE_NAME)
 
@@ -475,6 +476,21 @@ int main(int argc, char *argv[])
 	if(!session_name)
 		session_name = PACKAGE_NAME;
 
+	// Load session settings.
+	{
+		const gchar * session_settings_file_name = NULL;
+		size_t ix;
+
+		for(ix = 1; ix < argc; ix++)
+		{
+			if(argv[ix][0] != '-' && g_file_test(argv[ix],G_FILE_TEST_IS_REGULAR))
+					pw3270_session_config_load(argv[ix]);
+		}
+
+		pw3270_session_config_get();
+
+	}
+
 	rc = initialize();
 
 	if(!rc)
@@ -556,6 +572,7 @@ int main(int argc, char *argv[])
 
 		pw3270_stop_plugins(toplevel);
 		pw3270_unload_plugins();
+		pw3270_session_config_free();
 
 	}
 

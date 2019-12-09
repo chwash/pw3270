@@ -134,6 +134,7 @@
 		<Unit filename="src/pw3270/colors.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src/pw3270/common.h" />
 		<Unit filename="src/pw3270/common/common.h" />
 		<Unit filename="src/pw3270/common/config.c">
 			<Option compilerVar="CC" />
@@ -153,6 +154,9 @@
 		</Unit>
 		<Unit filename="src/pw3270/include/v3270.h" />
 		<Unit filename="src/pw3270/include/v3270ft.h" />
+		<Unit filename="src/pw3270/linux/config.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src/pw3270/linux/print.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -233,6 +237,9 @@
 		<Unit filename="src/pw3270/v3270ft/Makefile.in" />
 		<Unit filename="src/pw3270/v3270ft/genmarshal" />
 		<Unit filename="src/pw3270/window.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/pw3270/windows/config.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/pw3270/windows/print.c">

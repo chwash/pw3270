@@ -31,7 +31,7 @@
 
  #include <gtk/gtk.h>
  #include <config.h>
- #include "../common/common.h"
+ #include "../common.h"
  #include "parser.h"
 
  #define ERROR_DOMAIN g_quark_from_static_string("uiparser")

@@ -46,6 +46,7 @@
 	#endif
 
 	#include <libintl.h>
+	#include <lib3270.h>
 	#include <glib/gi18n.h>
 	#include <gtk/gtk.h>
 
@@ -56,8 +57,9 @@
 	#endif
 
 	// Configuration
-	void		  configuration_init(void);
-	void		  configuration_deinit(void);
+	LIB3270_EXPORT void		  pw3270_session_config_load(const gchar *filename);
+	LIB3270_EXPORT void		  pw3270_session_config_free(void);
+	LIB3270_EXPORT GKeyFile * pw3270_session_config_get(void);
 
 	gchar		* get_string_from_config(const gchar *group, const gchar *key, const gchar *def);
 	gboolean	  get_boolean_from_config(const gchar *group, const gchar *key, gboolean def);
@@ -81,8 +83,6 @@
 		void		  registry_foreach(HKEY parent, const gchar *name,void (*cbk)(const gchar *key, const gchar *val, gpointer *user_data), gpointer *user_data);
 		void 		  registry_set_double(HKEY hKey, const gchar *key, gdouble value);
 		gboolean	  registry_get_double(HKEY hKey, const gchar *key, gdouble *value);
-	#else
-		GKeyFile	* get_application_keyfile(void);
 	#endif // ENABLE_WINDOWS_REGISTRY
 
 

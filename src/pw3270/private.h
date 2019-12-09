@@ -68,7 +68,7 @@
 
 /*--[ Global prototipes ]----------------------------------------------------------------------------*/
 
- #include "common/common.h"
+ #include "common.h"
 
  G_GNUC_INTERNAL GtkWidget		* create_main_window(const gchar *uri);
  G_GNUC_INTERNAL void			  setup_font_list(GtkWidget *widget, GtkWidget *obj);

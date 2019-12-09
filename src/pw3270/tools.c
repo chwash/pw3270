@@ -75,22 +75,8 @@ int libpw3270_loaded(void)
 int libpw3270_unloaded(void)
 {
 	trace("%s",__FUNCTION__);
-	configuration_deinit();
 	return 0;
 }
-
-/*
-LIB3270_EXPORT gchar * pw3270_build_filename(GtkWidget *widget, const gchar *first_element, ...)
-{
-	va_list args;
-	gchar	*path;
-
-	va_start(args, first_element);
-	path = filename_from_va(first_element,args);
-	va_end(args);
-	return path;
-}
-*/
 
 LIB3270_EXPORT void pw3270_save_window_size(GtkWidget *widget, const gchar *name)
 {

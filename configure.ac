@@ -483,7 +483,6 @@ dnl ---------------------------------------------------------------------------
 
 AC_CONFIG_FILES(src/pw3270/Makefile)
 AC_CONFIG_FILES(src/pw3270/uiparser/Makefile)
-AC_CONFIG_FILES(src/pw3270/common/Makefile)
 
 AC_CONFIG_FILES(src/libpw3270cpp/Makefile)
 

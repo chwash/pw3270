@@ -40,7 +40,7 @@
 #include <v3270/trace.h>
 #include <v3270/toggle.h>
 #include <v3270/settings.h>
-#include "common/common.h"
+#include "common.h"
 
 /*--[ Widget definition ]----------------------------------------------------------------------------*/
 
@@ -162,8 +162,6 @@ static GtkWidget * trace_window = NULL;
 		object_class->destroy = pw3270_destroy;
 	}
 #endif // GTK3
-
-	configuration_init();
 
  }
 
@@ -420,7 +418,7 @@ static GtkWidget * trace_window = NULL;
 
 #else
 
-	v3270_to_key_file(widget, get_application_keyfile(), "terminal");
+	v3270_to_key_file(widget, pw3270_session_config_get(), "terminal");
 
 #endif // _WIN32
 
