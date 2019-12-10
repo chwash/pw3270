@@ -407,7 +407,6 @@ static GtkWidget * trace_window = NULL;
 
 	GKeyFile * keyfile = pw3270_session_config_get(FALSE);
 
- 	debug("%s keyfile=%p",__FUNCTION__,keyfile);
 	if(keyfile)
 	{
 		v3270_to_key_file(widget, keyfile, "terminal");
@@ -418,7 +417,7 @@ static GtkWidget * trace_window = NULL;
 	{
 		HKEY hKey;
 
-		if(get_registry_handle(NULL, &hKey, KEY_SET_VALUE))
+		if(pw3270_win32_registry_open(NULL, &hKey, KEY_SET_VALUE))
 		{
 			v3270_to_registry(widget, hKey, "terminal");
 			RegCloseKey(hKey);
@@ -872,7 +871,7 @@ static GtkWidget * trace_window = NULL;
 	g_signal_connect(widget->terminal,"field_clicked",G_CALLBACK(field_clicked),widget);
 	g_signal_connect(widget->terminal,"toggle_changed",G_CALLBACK(toggle_changed),widget);
 	g_signal_connect(widget->terminal,"session_changed",G_CALLBACK(session_changed),widget);
-	g_signal_connect(widget->terminal,"save_settings",G_CALLBACK(save_terminal_settings),widget);
+	g_signal_connect(widget->terminal,"save_settings",G_CALLBACK(pw3270_session_save_terminal),NULL);
 
 	//g_signal_connect(widget->terminal,"print",G_CALLBACK(print_all),widget);
 

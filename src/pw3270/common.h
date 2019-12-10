@@ -60,7 +60,8 @@
 	LIB3270_EXPORT void		  pw3270_session_config_load(const gchar *filename);
 	LIB3270_EXPORT void		  pw3270_session_config_save();
 	LIB3270_EXPORT void		  pw3270_session_config_free(void);
-	LIB3270_EXPORT GKeyFile * pw3270_session_config_get(gboolean create);
+	LIB3270_EXPORT GKeyFile	* pw3270_session_config_get(gboolean create);
+	LIB3270_EXPORT void		  pw3270_session_save_terminal(GtkWidget *terminal);
 
 	gchar		* get_string_from_config(const gchar *group, const gchar *key, const gchar *def);
 	gboolean	  get_boolean_from_config(const gchar *group, const gchar *key, gboolean def);
@@ -79,11 +80,10 @@
 	void		  restore_window_from_config(const gchar *group, const gchar *key, GtkWidget *hwnd);
 
 	#ifdef ENABLE_WINDOWS_REGISTRY
-		gboolean	  get_registry_handle(const gchar *group, HKEY *hKey, REGSAM samDesired);
+		gboolean	  pw3270_win32_registry_open(const gchar *group, HKEY *hKey, REGSAM samDesired);
+		void 		  pw3270_win32_registry_foreach(HKEY parent, const gchar *name,void (*cbk)(const gchar *key, const gchar *val, gpointer *user_data), gpointer *user_data);
+
 		HKEY		  get_application_registry(REGSAM samDesired);
-		void		  registry_foreach(HKEY parent, const gchar *name,void (*cbk)(const gchar *key, const gchar *val, gpointer *user_data), gpointer *user_data);
-		void 		  registry_set_double(HKEY hKey, const gchar *key, gdouble value);
-		gboolean	  registry_get_double(HKEY hKey, const gchar *key, gdouble *value);
 	#endif // ENABLE_WINDOWS_REGISTRY
 
 

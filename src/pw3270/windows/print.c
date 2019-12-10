@@ -100,6 +100,29 @@ static gchar * enum_to_string(GType type, guint enum_value)
     }
  }
 
+ gboolean registry_get_double(HKEY hKey, const gchar *key, gdouble *value)
+ {
+	BYTE			  data[4096];
+	unsigned long	  datatype;
+	unsigned long	  datalen 	= sizeof(data);
+	gchar 			* end_of_valid_d;
+
+	if(RegQueryValueExA(hKey,key,NULL,&datatype,data,&datalen) != ERROR_SUCCESS)
+		return FALSE;
+
+	data[datalen] = 0;
+
+	* value = g_ascii_strtod((const gchar *) data, &end_of_valid_d);
+
+	if(*end_of_valid_d != '\0' || end_of_valid_d == ((gchar *) data))
+	{
+		g_warning("Key %s on registry isnt a valid double value",key);
+		return FALSE;
+	}
+
+ 	return TRUE;
+ }
+
  void load_print_operation_settings(GtkPrintOperation * operation)
  {
 	GtkPrintSettings 	* settings	= gtk_print_settings_new();
@@ -122,12 +145,12 @@ static gchar * enum_to_string(GType type, guint enum_value)
 
 	HKEY registry;
 
-	if(get_registry_handle("print",&registry,KEY_READ))
+	if(pw3270_win32_registry_open("print",&registry,KEY_READ))
 	{
 		HKEY 	  hKey;
 		DWORD	  disp;
 
-		registry_foreach(registry,"settings",update_settings,(gpointer) settings);
+		pw3270_win32_registry_foreach(registry,"settings",update_settings,(gpointer) settings);
 
 		if(RegCreateKeyEx(registry,"pagesetup",0,NULL,REG_OPTION_NON_VOLATILE,KEY_READ,NULL,&hKey,&disp) == ERROR_SUCCESS)
 		{
@@ -234,6 +257,15 @@ static gchar * enum_to_string(GType type, guint enum_value)
 
  }
 
+ static void registry_set_double(HKEY hKey, const gchar *key, gdouble value)
+ {
+	// Reference: http://git.gnome.org/browse/glib/tree/glib/gkeyfile.c
+	gchar result[G_ASCII_DTOSTR_BUF_SIZE];
+	g_ascii_dtostr (result, sizeof (result), value);
+
+	RegSetValueEx(hKey,key,0,REG_SZ,(const BYTE *) result,strlen(result)+1);
+ }
+
  void save_print_operation_settings(GtkPrintOperation * operation)
  {
 	// Save settings
@@ -246,7 +278,7 @@ static gchar * enum_to_string(GType type, guint enum_value)
 #ifdef ENABLE_WINDOWS_REGISTRY
 	HKEY registry;
 
-	if(get_registry_handle("print",&registry,KEY_SET_VALUE))
+	if(pw3270_win32_registry_open("print",&registry,KEY_SET_VALUE))
 	{
 		HKEY	hKey;
 		DWORD	disp;
