@@ -64,8 +64,10 @@
  /// @brief Open registry for read-only access.
  static enum REG_KEY search_for_registry_key(const gchar *group, const gchar *key, HKEY *hKey)
  {
-	g_autofree gchar	* path = g_strdup_printf("%s\\%s\\%s",WINDOWS_REGISTRY_PATH,g_get_application_name(),group);
 	size_t				  ix;
+	g_autofree gchar	* path = g_strjoin("\\",WINDOWS_REGISTRY_PATH,g_get_application_name(),group,NULL);
+
+	trace("%s(%s)",__FUNCTION__,path);
 
 	for(ix=0;ix < G_N_ELEMENTS(predefined);ix++)
 	{
@@ -88,7 +90,9 @@
  gboolean pw3270_win32_registry_open(const gchar *group, HKEY *hKey, REGSAM samDesired)
  {
  	size_t				  ix;
-	g_autofree gchar	* path = g_strdup_printf("%s\\%s\\%s",WINDOWS_REGISTRY_PATH,g_get_application_name(),group);
+	g_autofree gchar	* path = g_strjoin("\\",WINDOWS_REGISTRY_PATH,g_get_application_name(),group,NULL);
+
+	trace("%s(%s)",__FUNCTION__,path);
 
 	for(ix=0;ix < G_N_ELEMENTS(predefined);ix++)
 	{
@@ -308,7 +312,19 @@ void set_string_to_config(const gchar *group, const gchar *key, const gchar *fmt
 		}
 
 	}
+	else if(pw3270_win32_registry_open(group, &hKey, KEY_ALL_ACCESS))
+	{
+		if(str)
+		{
+			RegSetValueEx(hKey,key,0,REG_SZ,(const BYTE *) str,strlen(str)+1);
+		}
+		else
+		{
+			RegDeleteKey(hKey,key);
+		}
 
+		RegCloseKey(hKey);
+	}
 
 }
 
@@ -320,7 +336,21 @@ void set_boolean_to_config(const gchar *group, const gchar *key, gboolean val)
 	{
 		g_key_file_set_boolean(keyfile,group,key,val);
 	}
+	else if(pw3270_win32_registry_open(group, &hKey, KEY_ALL_ACCESS))
+	{
+		DWORD value = val ? 1 : 0;
+		LONG rc = RegSetValueEx(hKey, key, 0, REG_DWORD,(const BYTE *) &value,sizeof(value));
 
+		SetLastError(rc);
+
+		if(rc != ERROR_SUCCESS)
+		{
+			g_autofree gchar *msg = g_win32_error_message(GetLastError());
+			g_warning("Error \"%s\" when setting key HKCU\\%s\\%s\\%s",msg,WINDOWS_REGISTRY_PATH,g_get_application_name(),group,key);
+		}
+
+		RegCloseKey(hKey);
+	}
 }
 
 void set_integer_to_config(const gchar *group, const gchar *key, gint val)
@@ -330,6 +360,21 @@ void set_integer_to_config(const gchar *group, const gchar *key, gint val)
 	if(keyfile)
 	{
 		g_key_file_set_integer(keyfile,group,key,val);
+	}
+	else if(pw3270_win32_registry_open(group, &hKey, KEY_ALL_ACCESS))
+	{
+		DWORD value = val;
+		LONG rc = RegSetValueEx(hKey, key, 0, REG_DWORD,(const BYTE *) &value,sizeof(value));
+
+		SetLastError(rc);
+
+		if(rc != ERROR_SUCCESS)
+		{
+			g_autofree gchar *msg = g_win32_error_message(GetLastError());
+			g_warning("Error \"%s\" when setting key HKCU\\%s\\%s\\%s",msg,WINDOWS_REGISTRY_PATH,g_get_application_name(),group,key);
+		}
+
+		RegCloseKey(hKey);
 	}
 
 }
@@ -357,7 +402,6 @@ void pw3270_session_config_save()
 			g_mkdir_with_parents(g_get_user_config_dir(),S_IRUSR|S_IWUSR);
 			g_file_set_contents(filename,text,-1,&error);
 		}
-
 
 		if(error) {
 			g_message( _( "Can't save session settings: %s" ), error->message);
@@ -440,6 +484,23 @@ GKeyFile * pw3270_session_config_get(gboolean create)
 	return keyfile;
 }
 
+ void pw3270_session_save_terminal(GtkWidget *terminal)
+ {
+	HKEY hKey;
+
+	if(keyfile)
+	{
+		v3270_to_key_file(terminal, keyfile, "terminal");
+		pw3270_session_config_save();
+	}
+	else if(pw3270_win32_registry_open(NULL, &hKey, KEY_ALL_ACCESS))
+	{
+		v3270_to_registry(terminal, hKey, "terminal");
+		RegCloseKey(hKey);
+	}
+
+ }
+
  static const struct _WindowState
  {
         const char *name;
@@ -452,33 +513,121 @@ GKeyFile * pw3270_session_config_get(gboolean create)
         { "Sticky",		GDK_WINDOW_STATE_STICKY,	gtk_window_stick                }
  };
 
- void pw3270_session_save_terminal(GtkWidget *terminal)
- {
-	HKEY hKey;
-
-	GKeyFile * keyfile = pw3270_session_config_get(FALSE);
-
-	if(keyfile)
-	{
-		v3270_to_key_file(terminal, keyfile, "terminal");
-		pw3270_session_config_save();
-	}
-
-
- }
-
  void save_window_state_to_config(const gchar *group, const gchar *key, GdkWindowState CurrentState)
  {
+ 	size_t f;
+	HKEY hKey;
+
+ 	if(keyfile)
+	{
+		g_autofree gchar * id = g_strconcat(group,".",key,NULL);
+
+		for(f=0;f<G_N_ELEMENTS(WindowState);f++)
+			g_key_file_set_boolean(keyfile,id,WindowState[f].name,CurrentState & WindowState[f].flag);
+
+	}
+	else if(pw3270_win32_registry_open(group, &hKey, KEY_ALL_ACCESS))
+	{
+		for(f=0;f<G_N_ELEMENTS(WindowState);f++)
+		{
+			DWORD value = (CurrentState & WindowState[f].flag) ? 1 : 0;
+			RegSetValueEx(hKey, WindowState[f].name, 0, REG_DWORD,(const BYTE *) &value,sizeof(value));
+		}
+
+		RegCloseKey(hKey);
+	}
 
  }
 
  void save_window_size_to_config(const gchar *group, const gchar *key, GtkWidget *hwnd)
  {
+	HKEY hKey;
+
+	int pos[2];
+	gtk_window_get_size(GTK_WINDOW(hwnd),&pos[0],&pos[1]);
+
+	if(keyfile)
+	{
+		g_autofree gchar * id = g_strconcat(group,".",key,NULL);
+		g_key_file_set_integer_list(keyfile,id,"size",pos,2);
+	}
+	else if(pw3270_win32_registry_open(group, &hKey, KEY_ALL_ACCESS))
+	{
+		RegSetValueEx(hKey, "Size", 0, REG_BINARY,(const BYTE *) pos,sizeof(pos));
+		RegCloseKey(hKey);
+	}
 
  }
 
  void restore_window_from_config(const gchar *group, const gchar *key, GtkWidget *hwnd)
  {
+	HKEY hKey;
+	int f;
+
+	if(keyfile)
+	{
+		g_autofree gchar * id = g_strconcat(group,".",key,NULL);
+
+		if(g_key_file_has_key(keyfile,id,"size",NULL))
+		{
+			gsize	  sz	= 2;
+			gint	* vlr	=  g_key_file_get_integer_list(keyfile,id,"size",&sz,NULL);
+
+			if(vlr)
+			{
+				gtk_window_resize(GTK_WINDOW(hwnd),vlr[0],vlr[1]);
+				g_free(vlr);
+			}
+
+		}
+
+		for(f=0;f<G_N_ELEMENTS(WindowState);f++)
+		{
+			if(g_key_file_get_boolean(keyfile,id,WindowState[f].name,NULL))
+				WindowState[f].activate(GTK_WINDOW(hwnd));
+		}
+
+	}
+	else if(search_for_registry_key(group,key,&hKey) != REG_KEY_INEXISTENT)
+	{
+		int 			pos[2];
+		unsigned long	datalen = sizeof(pos);
+		unsigned long	datatype;
+
+		if(RegQueryValueExA(hKey,"Size",NULL,&datatype,(BYTE *) pos,&datalen) == ERROR_SUCCESS)
+		{
+			if(datatype == REG_BINARY && datalen == sizeof(pos))
+			{
+				gtk_window_resize(GTK_WINDOW(hwnd),pos[0],pos[1]);
+			}
+			else
+			{
+				g_warning("Unexpected registry data in %s\\%s\\Size",group,key);
+			}
+		}
+
+		for(f=0;f<G_N_ELEMENTS(WindowState);f++)
+		{
+			DWORD			data;
+
+			datalen       = sizeof(data);
+
+			if(RegQueryValueExA(hKey,WindowState[f].name,NULL,&datatype,(BYTE *) &data,&datalen) == ERROR_SUCCESS)
+			{
+				if(datatype == REG_DWORD)
+				{
+					if(data)
+						WindowState[f].activate(GTK_WINDOW(hwnd));
+				}
+				else
+				{
+					g_warning("Unexpected registry data type in %s\\%s\\%s",group,key,WindowState[f].name);
+				}
+			}
+		}
+
+		RegCloseKey(hKey);
+	}
 
  }
 
