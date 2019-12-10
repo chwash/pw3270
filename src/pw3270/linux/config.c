@@ -38,6 +38,7 @@
  #include "../common.h"
  #include <stdarg.h>
  #include <glib/gstdio.h>
+ #include <v3270/settings.h>
 
 /*--[ Globals ]--------------------------------------------------------------------------------------*/
 
@@ -439,10 +440,9 @@ void pw3270_session_save_terminal(GtkWidget *terminal)
 {
 	GKeyFile * keyfile = pw3270_session_config_get(TRUE);
 
- 	debug("%s keyfile=%p",__FUNCTION__,keyfile);
 	if(keyfile)
 	{
-		v3270_to_key_file(widget, keyfile, "terminal");
+		v3270_to_key_file(terminal, keyfile, "terminal");
 		pw3270_session_config_save();
 	}
 
