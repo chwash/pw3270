@@ -52,6 +52,8 @@
 	GtkWidget * dialog = v3270_settings_dialog_new();
 	GtkWidget * settings = v3270_color_selection_new();
 
+	v3270_settings_dialog_set_has_subtitle(dialog,FALSE);
+
 	gtk_window_set_title(GTK_WINDOW(dialog), v3270_settings_get_title(settings));
 	gtk_container_add(GTK_CONTAINER(dialog), settings);
 
