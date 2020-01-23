@@ -443,6 +443,14 @@ buildApplication()
 			failed "Can't install ${1}"
 		fi
 
+		if [ -x ${PROJECTDIR}/win/install.${1} ]; then
+			pushd ${WORKDIR}/sources/${1}
+			${PROJECTDIR}/win/install.${1}
+			if [ "$?" != "0" ]; then
+				failed "Can't install ${1}"
+			fi
+			popd
+		fi
 
 		for NSI in $(find ./win -name '*.nsi')
 		do
