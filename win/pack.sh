@@ -444,7 +444,7 @@ buildApplication()
 		fi
 
 		if [ -x ${PROJECTDIR}/win/install.${1} ]; then
-			pushd ${WORKDIR}/sources/${1}
+			pushd ${WORKDIR}/build/${ARCH}/${1}
 			${PROJECTDIR}/win/install.${1}
 			if [ "$?" != "0" ]; then
 				failed "Can't install ${1}"
