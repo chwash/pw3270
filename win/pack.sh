@@ -444,7 +444,8 @@ buildApplication()
 		fi
 
 		if [ -x ${PROJECTDIR}/win/install.${1} ]; then
-			pushd ${WORKDIR}/build/${ARCH}/${1}
+			pushd "${WORKDIR}/build/${ARCH}"
+			echo "Executando install.${1} em ${PWD}"
 			${PROJECTDIR}/win/install.${1}
 			if [ "$?" != "0" ]; then
 				failed "Can't install ${1}"
