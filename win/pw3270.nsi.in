@@ -80,7 +80,6 @@ SubSection "@PRODUCT_NAME@" SecMain
 		file "/oname=$INSTDIR\lib@LIBRARY_NAME@.dll"			"lib@LIBRARY_NAME@.dll"
 		file "/oname=$INSTDIR\libv3270.dll"				"libv3270.dll"
 		file "/oname=$INSTDIR\@PACKAGE@.dll"				"@PACKAGE@.dll"
-		file "/oname=$SYSDIR\libipc3270.dll"				"libipc3270.dll"
 
 		# Configuration files
 		file "/oname=$INSTDIR\@PRODUCT_NAME@-logo.png"			"@PRODUCT_NAME@\@PRODUCT_NAME@-logo.png"
@@ -150,9 +149,12 @@ SubSection "@PRODUCT_NAME@" SecMain
 			setOutPath $INSTDIR
 
 			${DisableX64FSRedirection}
-			CreateDirectory "$INSTDIR\plugins"
 
+			CreateDirectory "$INSTDIR\plugins"
 			file "/oname=$INSTDIR\plugins\ipcserver.dll"	"@PRODUCT_NAME@-plugins\ipcserver.dll"
+
+			${@NSISREDIR@}
+			file "/oname=$SYSDIR\libipc3270.dll"		"libipc3270.dll"
 
 		sectionEnd
 
@@ -164,7 +166,9 @@ SubSection "@PRODUCT_NAME@" SecMain
 !ifdef WITHLIBHLLAPI
 		Section /o "HLLAPI" HLLAPIBinding
 
-			${DisableX64FSRedirection}
+			${@NSISREDIR@}
+
+			# Install HLLAPI connector
 			file "/oname=$SYSDIR\hllapi.dll"		"libhllapi.dll"
 
 			# Install with "lib" prefix for compatibility.
@@ -176,11 +180,13 @@ SubSection "@PRODUCT_NAME@" SecMain
 !ifdef WITHMONO-TN3270
 		Section /o ".NET" DOTNET
 
-			${DisableX64FSRedirection}
 			CreateDirectory "$INSTDIR\dotnet"
 
+			${DisableX64FSRedirection}
 			file "/oname=$INSTDIR\dotnet\tn3270.dll"	"mono/lib/tn3270-5.2/tn3270.dll"
 			file "/oname=$INSTDIR\dotnet\tn3270.xml"	"mono/gapi-2.0/tn3270/tn3270.xml"
+
+			${@NSISREDIR@}
 			file "/oname=$SYSDIR\mono-tn3270.dll"		"mono-tn3270.dll"
 
 		SectionEnd
@@ -290,6 +296,8 @@ Section "Uninstall"
 	SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
 
 	# Delete System libraries
+	${@NSISREDIR@}
+
 	delete $SYSDIR\libipc3270.dll
 
 !ifdef WITHHLLAPI
