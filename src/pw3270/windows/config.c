@@ -32,6 +32,8 @@
  #include "../pw3270/private.h"
 
  #include "../common.h"
+ #include <lib3270.h>
+ #include <lib3270/log.h>
  #include <stdarg.h>
  #include <glib/gstdio.h>
  #include <v3270/settings.h>
@@ -100,6 +102,13 @@
 			return TRUE;
 	}
 
+	if(RegCreateKey(HKEY_CURRENT_USER,path,hKey) == ERROR_SUCCESS) {
+		g_message("Registry key %s was created",path);
+		return TRUE;
+	}
+
+	g_warning("Can´t create registry key for %s",path);
+
 	return FALSE;
 
  }
@@ -134,28 +143,6 @@
 	}
  }
 
-
- /*
- static BOOL registry_open_key(const gchar *group, const gchar *key, REGSAM samDesired, HKEY *hKey)
- {
- 	static HKEY	  predefined[] = { HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE };
- 	int			  f;
-	gchar		* path = g_strdup_printf("%s\\%s\\%s",registry_path,g_get_application_name(),group);
-
-	for(f=0;f<G_N_ELEMENTS(predefined);f++)
-	{
-		if(RegOpenKeyEx(predefined[f],path,0,samDesired,hKey) == ERROR_SUCCESS)
-		{
-			g_free(path);
-			return TRUE;
-		}
-	}
-
-	g_free(path);
-
-	return FALSE;
- }
- */
 
 
  gboolean get_boolean_from_config(const gchar *group, const gchar *key, gboolean def)

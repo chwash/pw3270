@@ -32,6 +32,7 @@
 	#include <config.h>
 
 #ifdef _WIN32
+	#include <winsock2.h>
 	#include <windows.h>
 #endif // _WIN32
 
