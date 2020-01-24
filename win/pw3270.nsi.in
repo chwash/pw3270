@@ -300,7 +300,7 @@ Section "Uninstall"
 
 	delete $SYSDIR\libipc3270.dll
 
-!ifdef WITHHLLAPI
+!ifdef WITHLIBHLLAPI
 	delete $SYSDIR\libhllapi.dll
 	delete $SYSDIR\hllapi.dll
 !endif
@@ -347,7 +347,7 @@ Function .onInit
 
 	#---[ Check HLLAPI Command line option ]-------------------------------------------------------------
 
-!ifdef WITHHLLAPI
+!ifdef WITHLIBHLLAPI
 
 	Push $0
 
