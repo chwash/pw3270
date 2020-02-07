@@ -33,6 +33,7 @@ PACKAGE_PLUGINS=""
 PACKAGE_EXTRAS="libhllapi"
 TARGET_ARCHS="x86_64 x86_32"
 GIT_URL="https://github.com/PerryWerneck"
+BUILD_UNSTABLE=0
 
 PROJECTDIR=$(dirname $(dirname $(readlink -f ${0})))
 WORKDIR=$(mktemp -d)
@@ -67,28 +68,42 @@ failed()
 	exit -1
 }
 
+
 #
 # Get Sources from GIT
 #
-prepare()
+clone()
 {
-	echo -e "\e]2;Preparing ${1}\a"
-	echo "Preparing ${1}"
+	echo -e "\e]2;Cloning ${1}\a"
+	echo "Cloning ${1}"
 
 	mkdir -p ${WORKDIR}/sources
 
-	TEMPVAR=${1}_branch
-	BRANCH=${!TEMPVAR}
+	if [ "${BUILD_UNSTABLE}" == "1" ]; then
+		BRANCH="develop"
+	else
+		TEMPVAR=${1}_branch
+		BRANCH=${!TEMPVAR}
+	fi
 
 	if [ -z ${BRANCH} ]; then
 		git clone --quiet ${GIT_URL}/${1}.git ${WORKDIR}/sources/${1}
 	else
+		echo -e "\e]2;Cloning ${1} ${BRANCH}\a"
+		echo "Cloning ${1} ${BRANCH}"
 		git clone --quiet --branch "${BRANCH}" ${GIT_URL}/${1}.git ${WORKDIR}/sources/${1}
 	fi
 
 	if [ "$?" != "0" ]; then
 		failed "Can't get sources for ${1}"
 	fi
+
+}
+
+prepare()
+{
+	echo -e "\e]2;Preparing ${1}\a"
+	echo "Preparing ${1}"
 
 	if [ -x ${PROJECTDIR}/win/prepare.${1} ]; then
 		pushd ${WORKDIR}/sources/${1}
@@ -584,18 +599,25 @@ makeInstaller()
 				failed "Error building ${ARCH} ${NSI}"
 			fi
 
+			if [ ${BUILD_UNSTABLE} == "1" ]; then
+				TARGET_PATH="/${PRODUCT_NAME}/unstable/${ARCH}"
+			else
+				TARGET_PATH="/${PRODUCT_NAME}/${ARCH}"
+			fi
+
 			if [ -d ~/public_html ]; then
-				mkdir -p ~/public_html/win/${PRODUCT_NAME}/${ARCH}
-				cp -v *-[0-9]*-${TARCH}.exe ~/public_html/win/${PRODUCT_NAME}/${ARCH}
+				mkdir -p ~/public_html/win/${TARGET_PATH}
+				cp -v *-[0-9]*-${TARCH}.exe ~/public_html/win/${TARGET_PATH}
 				if [ "$?" != "0" ]; then
-					failed "Can't copy binary to ~/public_html/win/${PRODUCT_NAME}/${ARCH}"
+					failed "Can't copy binary to ~/public_html/win/${TARGET_PATH}"
 				fi
 			fi
 			
 			if [ "${PUBLISH}" == "1" ] && [ ! -z ${WIN_PACKAGE_SERVER} ]; then
-				scp *-[0-9]*-${TARCH}.exe ${WIN_PACKAGE_SERVER}/${PRODUCT_NAME}/${ARCH}
+
+				scp *-[0-9]*-${TARCH}.exe ${WIN_PACKAGE_SERVER}/${TARGET_PATH}
 				if [ "$?" != "0" ]; then
-					failed "Can't publish to ${WIN_PACKAGE_SERVER}/${PRODUCT_NAME}/${ARCH}"
+					failed "Can't publish to ${WIN_PACKAGE_SERVER}/${TARGET_PATH}"
 				fi
 			fi
 
@@ -704,6 +726,14 @@ do
 			PROJECTDIR=$(readlink -f ${value})
 			;;
 
+		UNSTABLE)
+			BUILD_UNSTABLE=1
+			;;
+
+		DEVELOP)
+			BUILD_UNSTABLE=1
+			;;
+
 		SHELL-ON-ERROR)
 			PAUSE_ON_ERROR=1
 			;;
@@ -720,6 +750,7 @@ do
 			echo "  --no-pre-reqs		Don't try to install required packages"
 			echo "  --pre-reqs		Install required packages"
 			echo "  --shell-on-error	Open a shell when the build process failed"
+			echo "  --unstable		Build unstable version"
 
 			if [ ! -z ${WIN_PACKAGE_SERVER} ]; then
 				echo "  --no-publish		Don't publish binaries in ${WIN_PACKAGE_SERVER}/${PRODUCT_NAME}"
@@ -754,18 +785,25 @@ fi
 #
 for src in ${CORE_LIBRARIES}
 do
+	echo "Core library: ${src}"
+	clone ${src}
 	prepare ${src}
 done
 
+clone pw3270
 prepare pw3270
 
 for src in ${PACKAGE_PLUGINS}
 do
+	echo "Plugin module: ${src}"
+	clone pw3270-plugin-${src}
 	prepare pw3270-plugin-${src}
 done
 
 for src in ${PACKAGE_EXTRAS}
 do
+	echo "Extra package: ${src}"
+	clone ${src}
 	prepare ${src}
 done
 
