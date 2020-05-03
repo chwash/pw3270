@@ -408,6 +408,10 @@
 			return -1;
 		}
 
+		void set_intval(const char *method, int value)
+		{
+			throw exception("Call to unimplemented RPC method \"%s\"",method);
+		}
 
 #endif
 
